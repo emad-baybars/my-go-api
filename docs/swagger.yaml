@@ -1,0 +1,398 @@
+basePath: /api/v1
+definitions:
+  models.APIResponse:
+    properties:
+      data: {}
+      error:
+        example: Error message
+        type: string
+      message:
+        example: Operation successful
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  models.AuthResponse:
+    properties:
+      expires_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      token:
+        example: eyJhbGciOiJIUzI1NiIs...
+        type: string
+      user:
+        $ref: '#/definitions/models.UserInfo'
+    type: object
+  models.HealthResponse:
+    properties:
+      services:
+        additionalProperties:
+          type: string
+        type: object
+      status:
+        example: healthy
+        type: string
+      timestamp:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      version:
+        example: 1.0.0
+        type: string
+    type: object
+  models.LoginRequest:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      password:
+        example: password123
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  models.PaginatedResponse:
+    properties:
+      data: {}
+      pagination:
+        $ref: '#/definitions/models.Pagination'
+    type: object
+  models.Pagination:
+    properties:
+      page:
+        example: 1
+        type: integer
+      page_size:
+        example: 10
+        type: integer
+      total:
+        example: 100
+        type: integer
+      total_page:
+        example: 10
+        type: integer
+    type: object
+  models.RegisterRequest:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      first_name:
+        example: John
+        type: string
+      last_name:
+        example: Doe
+        type: string
+      password:
+        example: password123
+        minLength: 6
+        type: string
+      username:
+        example: username
+        minLength: 3
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - password
+    - username
+    type: object
+  models.UpdateUserRequest:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      first_name:
+        example: John
+        type: string
+      last_name:
+        example: Doe
+        type: string
+    type: object
+  models.UserInfo:
+    properties:
+      created_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      email:
+        example: user@example.com
+        type: string
+      first_name:
+        example: John
+        type: string
+      id: {}
+      is_active:
+        example: true
+        type: boolean
+      last_name:
+        example: Doe
+        type: string
+      role:
+        example: user
+        type: string
+      updated_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      username:
+        example: username
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+    url: http://www.example.com/support
+  description: A comprehensive Go backend template with authentication, localization,
+    and database support
+  license:
+    name: MIT
+    url: http://www.opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Backend API Template
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with email and password
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.AuthResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+      summary: Login user
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with email, username, and password
+      parameters:
+      - description: Registration data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.AuthResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+      summary: Register a new user
+      tags:
+      - auth
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Check the health status of the API and connected services
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.HealthResponse'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+      summary: Health check
+      tags:
+      - health
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated list of all users
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - default: '"created_at:desc"'
+        description: Sort order
+        in: query
+        name: sort
+        type: string
+      - description: Search term
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.PaginatedResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+      security:
+      - Bearer: []
+      summary: Get all users (Admin only)
+      tags:
+      - users
+  /users/profile:
+    get:
+      consumes:
+      - application/json
+      description: Get the current user's profile information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.UserInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+      security:
+      - Bearer: []
+      summary: Get user profile
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update the current user's profile information
+      parameters:
+      - description: User update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.UserInfo'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+      security:
+      - Bearer: []
+      summary: Update user profile
+      tags:
+      - users
+securityDefinitions:
+  Bearer:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
