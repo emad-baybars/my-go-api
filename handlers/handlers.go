@@ -13,6 +13,7 @@ import (
 
 	"go-backend-template/config"
 	"go-backend-template/database"
+	"go-backend-template/jwt"
 	"go-backend-template/models"
 	"go-backend-template/utils"
 )
@@ -113,7 +114,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		}
 
 		// Generate token
-		token, expiresAt, err := h.jwtUtils.GenerateToken(user.ID, user.Email, user.Username, user.Role)
+		token, expiresAt, err := jwt.GenerateToken(h.jwtUtils.Secret, user.ID, user.Email, user.Username, user.Role)
 		if err != nil {
 			h.logger.Error("Token generation failed", "error", err)
 			c.JSON(http.StatusInternalServerError, h.responseUtils.ErrorResponse(
@@ -194,7 +195,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		userMongo.ID = result.InsertedID.(primitive.ObjectID)
 
 		// Generate token
-		token, expiresAt, err := h.jwtUtils.GenerateToken(userMongo.ID.Hex(), userMongo.Email, userMongo.Username, userMongo.Role)
+		token, expiresAt, err := jwt.GenerateToken(h.jwtUtils.Secret, userMongo.ID.Hex(), userMongo.Email, userMongo.Username, userMongo.Role)
 		if err != nil {
 			h.logger.Error("Token generation failed", "error", err)
 			c.JSON(http.StatusInternalServerError, h.responseUtils.ErrorResponse(
@@ -277,7 +278,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		}
 
 		// Generate token
-		token, expiresAt, err := h.jwtUtils.GenerateToken(user.ID, user.Email, user.Username, user.Role)
+		token, expiresAt, err := jwt.GenerateToken(h.jwtUtils.Secret, user.ID, user.Email, user.Username, user.Role)
 		if err != nil {
 			h.logger.Error("Token generation failed", "error", err)
 			c.JSON(http.StatusInternalServerError, h.responseUtils.ErrorResponse(
@@ -338,7 +339,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		}
 
 		// Generate token
-		token, expiresAt, err := h.jwtUtils.GenerateToken(user.ID.Hex(), user.Email, user.Username, user.Role)
+		token, expiresAt, err := jwt.GenerateToken(h.jwtUtils.Secret, user.ID.Hex(), user.Email, user.Username, user.Role)
 		if err != nil {
 			h.logger.Error("Token generation failed", "error", err)
 			c.JSON(http.StatusInternalServerError, h.responseUtils.ErrorResponse(
